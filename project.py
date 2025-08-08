@@ -6,37 +6,32 @@ import re
 def main():
     print("\nWELCOME TO CASINO BLACKJACK!\n")
     while True:
-        balance = 0
-        start = option()
-        if start == "play":
-            balance = deposit_money()
-            while balance > 0:
-                while True:
-                    confirmation = input(
-                        "\nType 'p' to keep playing or type 'w' to withdraw your money: "
-                    ).strip().lower()
-                    if confirmation == "p":
-                        stake = bet(balance)
-                        print(f"\nBalance: $ {balance}\nStake: $ {stake}\n")
-                        result = game()
-                        if result == "WIN":
-                            balance += stake
-                            print(f"\nYou Win!\n\nBalance: $ {balance}")
-                        elif result == "LOSS":
-                            balance -= stake
-                            print(f"\nYou Lose!\n\nBalance: $ {balance}")
-                        else:
-                            print(f"\nDraw!\n\nBalance: $ {balance}")
-                        if balance == 0:
-                            print("\nInsufficient funds")
-                            break
-                    elif confirmation == "w":
-                        sys.exit(
-                            f"\nYour withdrawal of $ {balance} has been approved. Goodbye!"
-                        )
+        option()
+        balance = deposit_money()
+        while balance > 0:
+            while True:
+                confirmation = input(
+                    "\nType 'p' to keep playing or type 'w' to withdraw your money: "
+                ).strip().lower()
+                if confirmation == "p":
+                    stake = bet(balance)
+                    print(f"\nBalance: $ {balance - stake}\nStake: $ {stake}\n")
+                    result = game()
+                    if result == "WIN":
+                        balance += stake
+                        print(f"\nYou Win!\n\nBalance: $ {balance}")
+                    elif result == "LOSS":
+                        balance -= stake
+                        print(f"\nYou Lose!\n\nBalance: $ {balance}")
                     else:
-                        continue
-        continue
+                        print(f"\nDraw!\n\nBalance: $ {balance}")
+                    if balance == 0:
+                        print("\nInsufficient funds")
+                        break
+                elif confirmation == "w":
+                    sys.exit(
+                        f"\nYour withdrawal of $ {balance} has been approved. Goodbye!"
+                    )
 
 
 def game():
@@ -122,12 +117,11 @@ def game():
 
 def hand_counter(list):
     count = 0
-    raw_values = [i.lower() for i in list]
-    for i in raw_values:
-        if i[1] in ["k", "q", "j"] or i[1:3] == "10":
-            i = 10
+    raw_values = [card.lower() for card in list]
+    for card in raw_values:
+        if card[1] in ["1", "k", "q", "j"]:
             count += 10
-        elif i[1] == "a":
+        elif card[1] == "a":
             if count + 11 > 21:
                 count += 1
             elif count + 11 == 21:
@@ -135,7 +129,7 @@ def hand_counter(list):
             else:
                 count += 11
         else:
-            count += int(i[1])
+            count += int(card[1])
     return count
 
 
@@ -143,7 +137,7 @@ def option():
     while True:
         start = input("\nSelect an option: play/exit ").strip().lower()
         if start == "play":
-            return "play"
+            break
         elif start == "exit":
             sys.exit("\nGoodbye!")
 
@@ -153,46 +147,33 @@ def deposit_money():
         deposit = input(
             "\nEnter deposit amount (minimum $1, maximum $1000000): $ "
         ).strip()
-        if re.search(r"^[0-9]+\.?[0-9]*$", deposit):
-            if deposit[0] == "0" and "." not in deposit:
-                print("\nDeposit should not include any leading zeros")
-                continue
-            elif float(deposit) < 1:
+        if re.search(r"^[1-9]+\.?[0-9]*$", deposit):
+            if float(deposit) < 1:
                 print("\nDeposit amount must be at least $1")
-                continue
             elif float(deposit) > 1000000:
                 print("\nDeposit exceeds maximum allowable amount")
-                continue
             else:
                 return round(float(deposit), 2)
-        #This line of code for commas is new
-        elif "," in deposit:
-            return round(float(deposit.replace(",","")), 2)
+        elif "," in deposit and deposit[0] != "0" and deposit.replace(",","").isnumeric():
+            return float(deposit.replace(",",""))
         else:
             print("\nInvalid deposit amount: only digits and decimals allowed")
-            continue
+
 
 
 def bet(n):
     while True:
         stake = input("\nEnter stake amount: $ ")
-        if re.search(r"^[0-9]+\.?[0-9]*$", stake):
-            if stake[0] == "0" and "." not in stake:
-                print("\nStake should not include any leading zeros")
-                continue
-            elif float(stake) <= n:
+        if re.search(r"^[1-9]+\.?[0-9]*$", stake):
+            if float(stake) <= n:
                 return round(float(stake), 2)
             else:
                 print("\nStake exceeds available balance")
-                continue
-         #This line of code for commas is new
-        elif "," in stake:
-            return round(float(stake.replace(",","")), 2)
+        elif "," in stake and stake[0] != "0" and stake.replace(",","").isnumeric():
+            return float(stake.replace(",",""))
         else:
             print("\nInvalid stake amount")
-            continue
 
 
 if __name__ == "__main__":
     main()
-
